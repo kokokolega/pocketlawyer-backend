@@ -5,12 +5,12 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  apiKey: "AIzaSyDn90VoF_79NqYvNR8VXKzWEMcp00N4by4",
+  authDomain: "pocketlawyer-f0be5.firebaseapp.com",
+  projectId: "pocketlawyer-f0be5",
+  storageBucket: "pocketlawyer-f0be5.firebasestorage.app",
+  messagingSenderId: "788408754034",
+  appId: "1:788408754034:web:30afaedb0d9c32f11c47eb"
 };
 
 const app = initializeApp(firebaseConfig);
