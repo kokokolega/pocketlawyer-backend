@@ -38,8 +38,6 @@ PocketLawyer is a professional, scalable AI-powered legal assistance platform de
 ### Prerequisites
 
 - Node.js installed.
-- A Gemini API Key from [Google AI Studio](https://aistudio.google.com/).
-
 ### Installation
 
 1. Clone the repository.
@@ -49,7 +47,6 @@ PocketLawyer is a professional, scalable AI-powered legal assistance platform de
    ```
 3. Set up your environment variables:
    - Create a `.env` file based on `.env.example`.
-   - Add your `GEMINI_API_KEY`.
 
 ### Running the App
 
