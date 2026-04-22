@@ -1,87 +1,333 @@
-import React from 'react';
-import { motion } from 'motion/react';
-import { Scale, Target, Users, ShieldCheck } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import React from "react";
+import { motion } from "framer-motion";
+import { Code, Users, BookOpen, Sparkles } from "lucide-react";
+import { TeamSection } from "../components/TeamSection";
 
-export const AboutPage = () => {
-  const { t } = useTranslation();
+/* ─────────────────────────────────────────────
+   Google Fonts injection (Plus Jakarta Sans + DM Sans)
+   Drop this style tag once at the app root if preferred
+───────────────────────────────────────────── */
+const FontImport: React.FC = () => (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background-color: #FFF3E6;
+    }
+
+    /* Subtle grain texture overlay */
+    .grain-overlay::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+  `}</style>
+);
+
+/* ─────────────────────────────────────────────
+   Decorative floating orbs
+───────────────────────────────────────────── */
+const DecorOrb: React.FC<{
+  size: number;
+  top?: string;
+  left?: string;
+  right?: string;
+  bottom?: string;
+  gradient: string;
+  blur?: number;
+  opacity?: number;
+}> = ({ size, top, left, right, bottom, gradient, blur = 60, opacity = 0.18 }) => (
+  <div
+    className="absolute rounded-full pointer-events-none"
+    style={{
+      width: size,
+      height: size,
+      top,
+      left,
+      right,
+      bottom,
+      background: gradient,
+      filter: `blur(${blur}px)`,
+      opacity,
+    }}
+  />
+);
+
+/* ─────────────────────────────────────────────
+   Hero / Page header
+───────────────────────────────────────────── */
+const PageHeader: React.FC = () => (
+  <div className="relative text-center py-20 px-4 overflow-hidden">
+    {/* Decorative blobs */}
+    <DecorOrb
+      size={320}
+      top="-60px"
+      left="-80px"
+      gradient="radial-gradient(circle, #FF9933 0%, #FFD4A8 70%)"
+      opacity={0.22}
+    />
+    <DecorOrb
+      size={220}
+      top="20px"
+      right="-60px"
+      gradient="radial-gradient(circle, #F97316 0%, #FBBF24 70%)"
+      opacity={0.16}
+    />
+    <DecorOrb
+      size={160}
+      bottom="0px"
+      left="40%"
+      gradient="radial-gradient(circle, #FFB866 0%, #FFF3E6 80%)"
+      opacity={0.25}
+    />
+
+    {/* Eyebrow chip */}
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="inline-flex items-center gap-2 mb-5 px-4 py-1.5 rounded-full border border-[#FF9933]/40 bg-white/60 backdrop-blur-sm shadow-sm"
+    >
+      <Sparkles className="w-3.5 h-3.5 text-[#FF9933]" />
+      <span
+        className="text-xs font-semibold text-[#B45309] uppercase tracking-widest"
+        style={{ fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.14em" }}
+      >
+        The People Behind It
+      </span>
+    </motion.div>
+
+    {/* Main heading */}
+    <motion.h1
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+      className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-[#3D2B00] leading-tight mb-4"
+      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+    >
+      Meet Our{" "}
+      <span
+        className="relative inline-block"
+        style={{
+          background: "linear-gradient(135deg, #FF9933 0%, #FF6B00 100%)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+        }}
+      >
+        Dream Team
+      </span>
+    </motion.h1>
+
+    {/* Subheading */}
+    <motion.p
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: 0.2 }}
+      className="max-w-xl mx-auto text-[#8A6640] text-base sm:text-lg leading-relaxed"
+      style={{ fontFamily: "'DM Sans', sans-serif" }}
+    >
+      Passionate builders, creators, and thinkers working together to make something extraordinary.
+    </motion.p>
+
+    {/* Decorative divider */}
+    <motion.div
+      initial={{ scaleX: 0, opacity: 0 }}
+      animate={{ scaleX: 1, opacity: 1 }}
+      transition={{ duration: 0.7, delay: 0.35 }}
+      className="mx-auto mt-8 h-px max-w-xs"
+      style={{
+        background: "linear-gradient(90deg, transparent, #FF9933 50%, transparent)",
+        transformOrigin: "center",
+      }}
+    />
+  </div>
+);
+
+/* ─────────────────────────────────────────────
+   Section divider
+───────────────────────────────────────────── */
+const SectionDivider: React.FC = () => (
+  <div className="max-w-7xl mx-auto px-6">
+    <div
+      className="h-px"
+      style={{
+        background:
+          "linear-gradient(90deg, transparent 0%, rgba(255,153,51,0.25) 30%, rgba(255,153,51,0.25) 70%, transparent 100%)",
+      }}
+    />
+  </div>
+);
+
+/* ─────────────────────────────────────────────
+   Team data
+───────────────────────────────────────────── */
+const techTeam = [
+  {
+    name: "Aditya",
+    role: "Full Stack Dev",
+    description: "Building core AI systems",
+    image: "https://i.pravatar.cc/500?img=1",
+  },
+  {
+    name: "Harsh",
+    role: "Backend Dev",
+    description: "Handles APIs & logic",
+    image: "https://i.pravatar.cc/500?img=2",
+  },
+];
+
+const socialTeam = [
+  {
+    name: "Aditya Pandey",
+    role: "Marketing",
+    description: "Growth & ads",
+    image: "/team/adityapandey.png",
+  },
+  {
+    name: "Sneha Sharma",
+    role: "Content",
+    description: "Creates content",
+    image: "/team/sneha.png",
+  },
+  {
+    name: "Anupurna Srivastava",
+    role: "Design",
+    description: "Brand visuals",
+    image: "/team/anupurna.png",
+  },
+   {
+    name: "Pranav Sagar",
+    role: "Designing",
+    description: "Design work",
+    image: "/team/pranav.png",
+  },
+    {
+    name: "Divyanshu Pandey",
+    role: "Content Creation",
+    description: "Content creation",
+    image: "/team/divyanshu.png",
+  },
+];
+
+const researchTeam = [
+  {
+    name: "Ramendra Mani Tripathi",
+    role: "Strategy, Advisory & Workflow",
+    description: "Case study",
+    image: "/team/ramendra.png",
+  },
+  {
+    name: "Nazia Tahseen",
+    role: "Legal Research and Analysis",
+    description: "Legal insights",
+    image: "/team/naziya.png",
+  },
+  {
+    name: "Mayank Dwivedi",
+    role: "Writer",
+    description: "Docs writing",
+    image: "/team/mayank.png",
+  },
+  {
+    name: "Snigdha Singh",
+    role: "Policy",
+    description: "Law research",
+    image: "/team/snigdha.png",
+  },
+  {
+    name: "Anupurna Srivastava",
+    role: "Review, Compliance & Risk Check",
+    description: "Data handling",
+    image: "/team/anupurna.png",
+  },
+  {
+    name: "Abhibhav Singh",
+    role: "Drafting",
+    description: "Legal drafting",
+    image: "/team/abhibhav.png",
+  },
+   {
+    name: "Raj Roshan Bharti",
+    role: "Documentation",
+    description: "Documentation work",
+    image: "/team/raj.png",
+  },
+];
+
+/* ─────────────────────────────────────────────
+   AboutPage
+───────────────────────────────────────────── */
+export const AboutPage: React.FC = () => {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="text-center mb-16">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-saffron/10 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6"
-        >
-          <Scale className="h-10 w-10 text-saffron" />
-        </motion.div>
-        <h1 className="text-4xl md:text-5xl font-bold text-navy mb-6">{t('about.title')}</h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-          {t('about.subtitle')}
-        </p>
-      </div>
+    <>
+      <FontImport />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-20">
-        {[
-          {
-            title: t('about.mission.title'),
-            desc: t('about.mission.description'),
-            icon: Target,
-            color: 'bg-blue-500'
-          },
-          {
-            title: t('about.vision.title'),
-            desc: t('about.vision.description'),
-            icon: Users,
-            color: 'bg-green-india'
-          },
-          {
-            title: t('about.values.title'),
-            desc: t('about.values.description'),
-            icon: ShieldCheck,
-            color: 'bg-saffron'
-          }
-        ].map((item, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center"
-          >
-            <div className={`${item.color} w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-black/5`}>
-              <item.icon className="h-6 w-6 text-white" />
-            </div>
-            <h3 className="text-2xl font-bold text-navy mb-4">{item.title}</h3>
-            <p className="text-gray-600 leading-relaxed">{item.desc}</p>
-          </motion.div>
-        ))}
-      </div>
+      {/* Root wrapper — warm peach/cream background */}
+      <div
+  className="relative min-h-screen w-full overflow-x-hidden"
+  style={{
+    background: "#FFFFFF",
+    fontFamily: "'DM Sans', sans-serif",
+  }}
+>
+        {/* Global decorative orbs — large, blurred, fixed position */}
+        <DecorOrb
+          size={500}
+          top="8%"
+          right="-10%"
+          gradient="radial-gradient(circle, rgba(255,153,51,0.28) 0%, transparent 70%)"
+          blur={90}
+          opacity={1}
+        />
+        <DecorOrb
+          size={400}
+          top="40%"
+          left="-8%"
+          gradient="radial-gradient(circle, rgba(251,191,36,0.22) 0%, transparent 70%)"
+          blur={80}
+          opacity={1}
+        />
+        <DecorOrb
+          size={350}
+          bottom="5%"
+          right="5%"
+          gradient="radial-gradient(circle, rgba(249,115,22,0.18) 0%, transparent 70%)"
+          blur={70}
+          opacity={1}
+        />
 
-      <div className="bg-navy rounded-[3rem] p-12 text-white relative overflow-hidden">
-        <div className="relative z-10 max-w-3xl">
-          <h2 className="text-3xl font-bold mb-6">{t('about.why.title')}</h2>
-          <div className="space-y-6">
-            <p className="text-gray-400 text-lg">
-              {t('about.why.description')}
-            </p>
-            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[
-                t('about.why.feat1'),
-                t('about.why.feat2'),
-                t('about.why.feat3'),
-                t('about.why.feat4')
-              ].map((feature) => (
-                <li key={feature} className="flex items-center space-x-2">
-                  <ShieldCheck className="h-5 w-5 text-saffron" />
-                  <span className="font-semibold">{feature}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+        {/* Page content */}
+        <div className="relative z-10">
+          {/* Page header */}
+          <PageHeader />
+
+        {/* ── Tech Team ── */}
+<TeamSection title="Tech Team" icon={Code} members={techTeam} />
+
+<SectionDivider />
+
+{/* ── Research Team ── */}
+<TeamSection title="Research Team" icon={BookOpen} members={researchTeam} />
+
+<SectionDivider />
+
+{/* ── Marketing Team ── */}
+<TeamSection title="Marketing Team" icon={Users} members={socialTeam} />
+
+          {/* Footer spacing */}
+          <div className="h-16" />
         </div>
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-saffron/10 -skew-x-12 translate-x-1/2" />
       </div>
-    </div>
+    </>
   );
 };
+
+export default AboutPage;
