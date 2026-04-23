@@ -89,10 +89,10 @@ Only return the valid JSON array. Do not include any other text or markdown form
         const jsonStr = response.replace(/```json\n|\n```|```/g, '').trim();
         const cases = JSON.parse(jsonStr);
         if (Array.isArray(cases)) {
-          // Ensure all required fields are present
+          // Ensure all required fields are present and generate a real Indian Kanoon search link
           return cases.map(c => ({
             ...c,
-            link: "#" // No real links available in simulated mode
+            link: `https://indiankanoon.org/search/?formInput=${encodeURIComponent(c.title)}`
           }));
         }
       } catch (parseError) {
