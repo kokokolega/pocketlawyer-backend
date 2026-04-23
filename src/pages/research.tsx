@@ -162,6 +162,8 @@ function EmptyState() {
   );
 }
 
+import { aiService } from "../services/aiService";
+
 export default function Research() {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -226,21 +228,29 @@ export default function Research() {
     }, 300);
 
     try {
-      // Provide a clear message that this feature is disabled without a backend
-      setResults([{
-        title: "Case Research Requires Backend",
-        court: "—",
-        year: "—",
-        category: "System Message",
-        summary: "The Case Research feature relies on web scraping real-time legal databases. This functionality requires a backend server to operate securely and avoid CORS issues. Since the application is currently running in a frontend-only mode, live case research is unavailable.",
-        link: "#",
-        relevance: "High",
-      }]);
+      // Use the simulated AI service for case research
+      const queryStr = Object.values(updated).filter(Boolean).join(" ");
+      const cases = await aiService.searchCases(queryStr);
+
+      setResults(
+        cases.map((item: any) => ({
+          title:     item.title     || "Untitled Case",
+          court:     item.court     || "—",
+          year:      String(item.year || "—"),
+          category:  item.category  || "—",
+          summary:   item.summary   || "",
+          link:      item.link      || "#",
+          relevance: item.relevance || "Medium",
+        }))
+      );
 
       setTimeout(() => {
+        const count = cases.filter((c) => c.title !== "No cases found").length;
         addMessage(
           "ai",
-          "⚠️ **Case Research is currently disabled.** This feature requires a backend server to scrape legal databases, which is not available in the current frontend-only setup."
+          count > 0
+            ? `✅ Found **${count} relevant case${count !== 1 ? "s" : ""}** (AI Simulated). Scroll down to review the details.`
+            : "⚠️ No cases matched your exact query. Try broadening your search with different keywords."
         );
       }, 500);
     } catch (err: any) {

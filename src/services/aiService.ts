@@ -61,7 +61,60 @@ Please structure the response with clear headings for:
     }
   },
 
+  // ================= CASE RESEARCH (AI SIMULATED) =================
+  async searchCases(query: string) {
+    try {
+      const prompt = `As an Indian legal expert, provide 3 highly relevant landmark or recent Indian court cases related to the following query:
+Query: "${query}"
 
+For each case, provide the information strictly in this JSON format:
+[
+  {
+    "title": "Case Name vs Case Name",
+    "court": "Name of the Court (e.g., Supreme Court of India)",
+    "year": "YYYY",
+    "category": "Area of Law (e.g., Criminal, Family, Contract)",
+    "summary": "A brief 2-3 sentence summary of the facts, legal issue, and judgment.",
+    "relevance": "High"
+  }
+]
+Only return the valid JSON array. Do not include any other text or markdown formatting.`;
+
+      const messages = [{ role: "user", content: prompt }];
+      const response = await fetchAIResponse(messages, 'openrouter', 'openai/gpt-4o-mini');
+      
+      // Attempt to parse the JSON response
+      try {
+        // Strip markdown code blocks if the AI accidentally includes them
+        const jsonStr = response.replace(/```json\n|\n```|```/g, '').trim();
+        const cases = JSON.parse(jsonStr);
+        if (Array.isArray(cases)) {
+          // Ensure all required fields are present
+          return cases.map(c => ({
+            ...c,
+            link: "#" // No real links available in simulated mode
+          }));
+        }
+      } catch (parseError) {
+        console.error("Failed to parse AI case research JSON:", parseError);
+        console.log("Raw response:", response);
+        // Fallback if parsing fails
+      }
+
+      return [{ 
+        title: "AI Simulated Research Result", 
+        court: "AI Database",
+        year: "2024",
+        category: "Simulated",
+        summary: response, 
+        relevance: "Medium",
+        link: "#"
+      }];
+    } catch (err) {
+      console.error("Case Research Error:", err);
+      throw err;
+    }
+  },
 
   // ================= DOCUMENT ANALYSIS =================
   async analyzeDocs(files: FileList) {
