@@ -396,7 +396,7 @@ export const LegalGuidance = () => {
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.07, duration: 0.3 }}
-                      className={`rounded-2xl border p-4 sm:p-6 ${getSectionIcon(section.title)}`}
+                      className={`rounded-2xl border p-4 sm:p-6 bg-white border-gray-100 shadow-sm`}
                     >
                     <div className="flex items-center gap-2 mb-3">
   {(() => {

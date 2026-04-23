@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { fetchAIResponse } from "../services/aiService";
 import {
   Scale,
   Send,
@@ -591,26 +592,15 @@ FOLLOW-UP MODE:
 Behave like ChatGPT + Lawyer combo.`;
 
       try {
-        const apiKey = (import.meta as any).env?.VITE_OPENROUTER_API_KEY;
-        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-            "HTTP-Referer": "https://pocketlawyer.in",
-            "X-Title": "PocketLawyer",
-          },
-          body: JSON.stringify({
-            model: "openai/gpt-3.5-turbo",
-            messages: [
-              { role: "system", content: systemPrompt },
-              ...withUser.map((m) => ({
-                role: m.role === "ai" ? "assistant" : "user",
-                content: m.content,
-              })),
-              {
-                role: "user",
-                content: `CASE DETAILS:
+        const aiMessages = [
+          { role: "system", content: systemPrompt },
+          ...withUser.map((m) => ({
+            role: m.role === "ai" ? "assistant" : "user",
+            content: m.content,
+          })),
+          {
+            role: "user",
+            content: `CASE DETAILS:
 ${buildCaseSummary(activeCase)}
 
 EVIDENCE:
@@ -631,15 +621,10 @@ EVIDENCE ANALYSIS:
 LATEST USER MESSAGE:
 ${content}
 `,
-              },
-            ]
-          }),
-        });
+          },
+        ];
 
-        const data = await res.json();
-        const replyText =
-          data.choices?.[0]?.message?.content ||
-          "⚠️ AI se response nahi aaya. Thodi der baad try karein.";
+        const replyText = await fetchAIResponse(aiMessages, 'openrouter', 'openai/gpt-3.5-turbo');
 
         const aiMsg: Message = {
           role: "ai",
@@ -647,7 +632,8 @@ ${content}
           time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         };
         pushMessages([...withUser, aiMsg]);
-      } catch {
+      } catch (err) {
+        console.error("AI Assistant Error:", err);
         const errMsg: Message = {
           role: "ai",
           content: "⚠️ Network error aaya. Please apna internet check karein aur dobara try karein.",
