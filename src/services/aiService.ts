@@ -3,8 +3,6 @@
  * Handles all AI-related API calls
  */
 
-const API_BASE = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:5000/api/ai";
-
 export const aiService = {
 
   // ================= COMPLAINT =================
@@ -16,17 +14,21 @@ export const aiService = {
     description: string;
   }) {
     try {
-      const res = await fetch(`${API_BASE}/generate-complaint`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const prompt = `Generate a formal legal complaint based on the following details:
+Category: ${data.category}
+Date: ${data.date}
+Location: ${data.location}
+Opposing Party: ${data.opposingParty}
+Description of Incident: ${data.description}
 
-      if (!res.ok) throw new Error("Failed to generate complaint");
+Please provide a well-structured and professional complaint draft suitable for Indian legal context.`;
 
-      return await res.json();
+      const messages = [{ role: "user", content: prompt }];
+      const response = await fetchAIResponse(messages, 'openrouter', 'openai/gpt-4o-mini'); // Using OpenRouter for now
+
+      return { content: response };
     } catch (err) {
-      console.error("Complaint Error:", err);
+      console.error("Complaint Generation Error:", err);
       throw err;
     }
   },
@@ -37,126 +39,113 @@ export const aiService = {
     description: string;
   }) {
     try {
-      const res = await fetch(`${API_BASE}/legal-guidance`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const prompt = `Provide legal guidance for the following issue in an Indian context:
+Issue Type: ${data.issueType}
+Description: ${data.description}
 
-      if (!res.ok) throw new Error("Failed to get legal guidance");
+Please structure the response with clear headings for:
+- 🔍 Case Analysis: (Summary of the issue)
+- ⚖️ Legal Issues & Risks: (Relevant laws, potential risks)
+- 📊 Chances / Probability: (Likelihood of success/outcome)
+- 🧠 Suggested Strategy: (Actionable steps, advice)
+- ❓ Questions for User: (Further information needed)
+`;
 
-      return await res.json();
+      const messages = [{ role: "user", content: prompt }];
+      const response = await fetchAIResponse(messages, 'openrouter', 'openai/gpt-4o-mini'); // Using OpenRouter for now
+
+      return { content: response };
     } catch (err) {
-      console.error("Guidance Error:", err);
+      console.error("Legal Guidance Error:", err);
       throw err;
     }
   },
 
-  // ================= CASE RESEARCH =================
-  async searchCases(query: string) {
-    try {
-      const res = await fetch(`${API_BASE}/case-research`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
-      });
 
-      if (!res.ok) throw new Error("Failed to research cases");
-
-      return await res.json();
-    } catch (err) {
-      console.error("Case Research Error:", err);
-      throw err;
-    }
-  },
 
   // ================= DOCUMENT ANALYSIS =================
   async analyzeDocs(files: FileList) {
-    try {
-      const formData = new FormData();
-
-      Array.from(files).forEach((file) => {
-        formData.append("documents", file);
-      });
-
-      const res = await fetch(`${API_BASE}/analyze-docs`, {
-        method: "POST",
-        body: formData,
-      });
-
-      // 🔴 agar backend me endpoint nahi hai to fallback
-      if (!res.ok) {
-        return {
-          summary:
-            "📄 Documents upload ho gaye hain.\n\n👉 AI analysis temporarily unavailable.\n👉 Please continue chat for guidance.",
-        };
-      }
-
-      return await res.json();
-    } catch (err) {
-      console.error("Analyze Docs Error:", err);
-
-      // fallback safe response
-      return {
-        summary:
-          "📄 Documents received.\n\n👉 Aap apna case explain karein, main help karta hoon.",
-      };
-    }
+    // This functionality relied on backend processing of documents.
+    // In a frontend-only setup, sending file contents directly to an AI API
+    // is generally not feasible or secure without a backend proxy.
+    console.warn("analyzeDocs: Functionality removed. Returning placeholder.");
+    return {
+      summary:
+        "Document analysis is not available in frontend-only mode. " +
+        "Please describe your case details in the chat for AI assistance.",
+    };
   },
   
 
   // ================= CHAT WITH CASE =================
   async chatWithCase(message: string) {
     try {
-      const res = await fetch(`${API_BASE}/chat-case`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
-      });
+      const systemPrompt = "You are an AI legal assistant for Indian law. Provide concise and helpful responses.";
+      const messages = [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: message }
+      ];
+      const response = await fetchAIResponse(messages, 'openrouter', 'openai/gpt-3.5-turbo'); // Using OpenRouter for now
 
-      // 🔴 fallback if backend missing
-      if (!res.ok) {
-        return "🤖 AI: Main aapki madad kar raha hoon. Apna case detail me batayein.";
-      }
-
-      const data = await res.json();
-      return data.reply || data.content || "No response";
+      return response;
     } catch (err) {
-      console.error("Chat Error:", err);
-
-      return "🤖 AI: Server issue aa raha hai, please dobara try karein.";
+      console.error("Chat with Case Error:", err);
+      return "🤖 AI: There was an error processing your request. Please try again.";
     }
   },
 };
-export async function fetchAIResponse(prompt: string) {
+export async function fetchAIResponse(
+  messages: Array<{ role: string; content: string }>,
+  modelProvider: 'openrouter' | 'groq',
+  modelName: string
+) {
   try {
-    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
+    let apiKey: string | undefined;
+    let apiUrl: string;
+    let headers: HeadersInit;
+
+    if (modelProvider === 'openrouter') {
+      apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+      apiUrl = "https://openrouter.ai/api/v1/chat/completions";
+      headers = {
+        "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
-      },
+        "HTTP-Referer": "https://pocketlawyer.in", // Your frontend domain
+        "X-Title": "PocketLawyer",
+      };
+    } else if (modelProvider === 'groq') {
+      apiKey = import.meta.env.VITE_GROQ_API_KEY;
+      apiUrl = "https://api.groq.com/openai/v1/chat/completions";
+      headers = {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      };
+    } else {
+      throw new Error("Unsupported model provider");
+    }
+
+    if (!apiKey) {
+      throw new Error(`API key for ${modelProvider} is not set.`);
+    }
+
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: headers,
       body: JSON.stringify({
-        model: "openai/gpt-4o-mini", // fast + cheap
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are a legal research assistant for Indian law. Give structured case results with title, court, year, category, summary.",
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
+        model: modelName,
+        messages: messages,
       }),
     });
 
-    const data = await res.json();
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ message: res.statusText }));
+      throw new Error(`AI API Error (${modelProvider} - ${res.status}): ${errorData.message || JSON.stringify(errorData)}`);
+    }
 
-    return data.choices?.[0]?.message?.content || "No response";
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || "No response from AI.";
   } catch (err) {
-    console.error(err);
-    return "Error fetching AI response";
+    console.error(`Error fetching AI response from ${modelProvider}:`, err);
+    return `Error fetching AI response from ${modelProvider}. Please check console for details.`;
   }
 }
