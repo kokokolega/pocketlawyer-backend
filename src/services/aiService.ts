@@ -3,7 +3,7 @@
  * Handles all AI-related API calls
  */
 
-const API_BASE = "https://pocketlawyer-backend-nh7q.onrender.com/api/ai";
+const API_BASE = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:5000/api/ai";
 
 export const aiService = {
 
