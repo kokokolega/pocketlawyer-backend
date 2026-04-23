@@ -226,39 +226,21 @@ export default function Research() {
     }, 300);
 
     try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updated),
-      });
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error((errData as any).error || `HTTP ${res.status}`);
-      }
-
-      const data = await res.json();
-      const safe: CaseResult[] = Array.isArray(data) ? data : [data];
-
-      setResults(
-        safe.map((item: any) => ({
-          title:     item.title     || "Untitled Case",
-          court:     item.court     || "—",
-          year:      String(item.year || "—"),
-          category:  item.category  || "—",
-          summary:   item.summary   || "",
-          link:      item.link      || "#",
-          relevance: item.relevance || "Medium",
-        }))
-      );
+      // Provide a clear message that this feature is disabled without a backend
+      setResults([{
+        title: "Case Research Requires Backend",
+        court: "—",
+        year: "—",
+        category: "System Message",
+        summary: "The Case Research feature relies on web scraping real-time legal databases. This functionality requires a backend server to operate securely and avoid CORS issues. Since the application is currently running in a frontend-only mode, live case research is unavailable.",
+        link: "#",
+        relevance: "High",
+      }]);
 
       setTimeout(() => {
-        const count = safe.filter((c) => c.title !== "No cases found").length;
         addMessage(
           "ai",
-          count > 0
-            ? `✅ Found **${count} relevant case${count !== 1 ? "s" : ""}** matching your criteria. Scroll down to review the judgments.`
-            : "⚠️ No cases matched your exact query. Try broadening your search with different keywords."
+          "⚠️ **Case Research is currently disabled.** This feature requires a backend server to scrape legal databases, which is not available in the current frontend-only setup."
         );
       }, 500);
     } catch (err: any) {

@@ -84,19 +84,19 @@ const INITIAL_FORM: FormData = {
   signatureDataUrl: null,
 };
 
+import { aiService } from '../services/aiService';
+
 // ─── Backend API call — API key stays on server, never in frontend ────────────
 
 async function generateComplaintViaBackend(data: FormData): Promise<string> {
   const category = CATEGORIES.find(c => c.key === data.category);
 
-  const response = await fetch('/api/ai/generate-complaint', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      category:      `${category?.label ?? data.category} — tone: ${category?.tone ?? 'formal'}`,
-      date:          data.date,
-      location:      data.applicantAddress || 'Not specified',
-      opposingParty: data.receiver         || 'Concerned Authority',
+  try {
+    const response = await aiService.generateComplaint({
+      category: `${category?.label ?? data.category} — tone: ${category?.tone ?? 'formal'}`,
+      date: data.date,
+      location: data.applicantAddress || 'Not specified',
+      opposingParty: data.receiver || 'Concerned Authority',
       description: [
         `Applicant: ${data.applicantName}`,
         `Mobile: ${data.applicantMobile}`,
@@ -104,12 +104,12 @@ async function generateComplaintViaBackend(data: FormData): Promise<string> {
         data.description,
         `Requested Action: ${data.requestedAction || 'Appropriate legal action'}`,
       ].filter(Boolean).join('\n'),
-    }),
-  });
-
-  if (!response.ok) throw new Error(`Server error: ${response.status}`);
-  const json = await response.json();
-  return json.content ?? 'Generation failed. Please try again.';
+    });
+    return response.content ?? 'Generation failed. Please try again.';
+  } catch (err) {
+    console.error("Complaint generation via aiService failed:", err);
+    throw new Error(`Generation error: ${(err as Error).message}`);
+  }
 }
 
 // ─── SignatureCanvas — FIXED: defined outside parent, wrapped in memo ─────────
